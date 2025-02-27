@@ -3,7 +3,7 @@ FROM node:22.14.0 AS build
 WORKDIR /hanbangbo
 
 # package.json과 yarn.lock 복사 후 의존성 설치
-COPY hanbangbo/package.json yarn.lock ./
+COPY hanbangbo/package.json hanbangbo/yarn.lock ./
 RUN yarn install
 
 # 프로젝트 코드 복사 및 빌드 실행
