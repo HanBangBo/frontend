@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: frontend_image
     container_name: frontend_web
     volumes:
       - .:/app
