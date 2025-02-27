@@ -8,8 +8,6 @@ services:
     container_name: frontend
     ports:
       - "80:80"
-    depends_on:
-      - web # ✅ Django 백엔드가 실행된 후 프론트엔드 실행
     networks:
       - shared_network # ✅ 백엔드와 같은 네트워크 사용
 
