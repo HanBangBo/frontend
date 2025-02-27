@@ -39,10 +39,16 @@ export const fetchQuestions = async (
 // ✅ 데이터 전송 (POST)
 export const submitQuizAnswer = async (quizId, answer) => {
   try {
-    const response = await api.post(`/quiz/${quizId}/submit`, { answer });
+    const requestBody = {
+      user: getCachedUserId(),
+      quiz_id: quizId,
+      is_correct: answer,
+    };
+
+    const response = await api.post(`/process_quiz_result`, requestBody);
     return response.data;
   } catch (error) {
-    console.error("퀴즈 답안을 제출하는 중 오류 발생:", error);
+    console.error("❌ 답안 제출 실패:", error);
     throw error;
   }
 };
