@@ -3,16 +3,16 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const allNewsSources = [
-  "한겨레",
-  "중앙일보",
   "한국경제",
-  "매일경제",
+  "헤럴드경제",
+  "한겨레",
   "조선일보",
   "서울신문",
   "동아일보",
   "경향신문",
   "한국일보",
   "세계일보",
+  "매일경제",
 ];
 
 const topNewsSources = allNewsSources.slice(0, 5); // 상위 5개 언론사

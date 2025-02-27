@@ -4,9 +4,9 @@ import styled from "styled-components";
 import NewsCategoryBar from "./\bNewsCategoryBar";
 
 const newsSources = [
-  { name: "한겨레", image: "https://picsum.photos/id/1/300/200" },
-  { name: "중앙일보", image: "https://picsum.photos/id/2/300/200" },
-  { name: "한국경제", image: "https://picsum.photos/id/3/300/200" },
+  { name: "한국경제", image: "https://picsum.photos/id/1/300/200" },
+  { name: "헤럴드경제", image: "https://picsum.photos/id/2/300/200" },
+  { name: "한겨레", image: "https://picsum.photos/id/3/300/200" },
   { name: "매일경제", image: "https://picsum.photos/id/4/300/200" },
   { name: "조선일보", image: "https://picsum.photos/id/5/300/200" },
   { name: "서울신문", image: "https://picsum.photos/id/6/300/200" },

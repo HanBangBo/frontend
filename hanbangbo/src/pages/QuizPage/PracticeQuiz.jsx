@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react"; // useEffect 추가
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { submitQuizAnswer } from "../../api/apiService";
@@ -8,126 +8,132 @@ const PracticeQuiz = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // ✅ URL로 직접 접근했을 때 대비하여 기본값 설정
-  const quizData = location.state?.quizData || [
-    {
-      id: 1,
-      quiz_content: "기본 문제 (데이터 없음)",
-      correct: "정답",
-      quiz_comment: "이 문제는 기본 데이터입니다.",
-    },
-    {
-      id: 9,
-      quiz_content: "문제 내용",
-      correct: "문제에 대한 정답",
-      quiz_comment: "문제에 대한 해설",
-      choices: [
-        "두번째 선택지",
-        "네번째 선택지",
-        "첫번째 선택지",
-        "세번째 선택지",
-      ],
-    },
-  ];
+  // URL로 직접 접근했을 때 대비하여 기본값 설정
+  const quizData = location.state?.quizData || [];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(""); // 사용자 응답
   const [result, setResult] = useState(null); // 정답 여부 결과
   const [quizResults, setQuizResults] = useState([]); // 정답 여부 저장 배열
+  const [isLastSubmitted, setIsLastSubmitted] = useState(false); // 마지막 문제 제출 여부
 
-  const currentQuestion = quizData[currentIndex];
-  const isMultipleChoice = !!currentQuestion.choices; // ✅ 객관식 여부 판단
-  const isLastQuestion = currentIndex === quizData.length - 1;
-
-  // ✅ 정답 제출 및 채점
-  const handleSubmitAnswer = async () => {
-    if (!selectedAnswer) return;
-
-    const isCorrect = selectedAnswer === currentQuestion.correct;
-    setResult(isCorrect ? "정답 ✅" : "오답 ❌");
-
-    // ✅ 정답 여부 저장 (누적)
-    setQuizResults((prev) => [
-      ...prev,
-      { quiz_id: currentQuestion.id, is_correct: isCorrect },
-    ]);
-
-    // ✅ 마지막 문제면 서버로 데이터 전송
-    if (isLastQuestion) {
-      await submitResults();
-    }
-  };
-
-  const submitResults = async () => {
+  const submitResults = useCallback(async () => {
     try {
       const quizIds = quizResults.map((item) => item.quiz_id);
       const isCorrectArray = quizResults.map((item) => item.is_correct);
-
       await submitQuizAnswer(quizIds, isCorrectArray);
       console.log("✅ 문제 풀이 결과 전송 완료!");
     } catch (error) {
       console.error("❌ 문제 풀이 결과 전송 실패:", error);
     }
+  }, [quizResults]);
+
+  // 항상 useEffect를 호출해야 하므로, 조기 반환 없이 조건부 렌더링 처리
+  useEffect(() => {
+    if (isLastSubmitted && quizResults.length > 0) {
+      submitResults();
+    }
+  }, [isLastSubmitted, quizResults, submitResults]);
+
+  // quizData가 없으면 에러 메시지 렌더링
+  const renderContent = () => {
+    if (quizData.length === 0) {
+      return <p>❌ 문제가 없습니다.</p>;
+    }
+
+    const currentQuestion = quizData[currentIndex] || {};
+    const isMultipleChoice = Array.isArray(currentQuestion.choices);
+    const isLastQuestion = currentIndex === quizData.length - 1;
+
+    return (
+      <>
+        <QuestionTitle>
+          {currentQuestion.quiz_content || "문제가 없습니다."}
+        </QuestionTitle>
+
+        {/* 문제 풀이 단계 */}
+        {!result ? (
+          isMultipleChoice ? (
+            <Options>
+              {currentQuestion.choices.map((choice) => (
+                <OptionButton
+                  key={choice}
+                  onClick={() => setSelectedAnswer(choice)}
+                  selected={selectedAnswer === choice}
+                >
+                  {choice}
+                </OptionButton>
+              ))}
+            </Options>
+          ) : (
+            <InputAnswer
+              type="text"
+              value={selectedAnswer}
+              onChange={(e) => setSelectedAnswer(e.target.value)}
+              placeholder="정답을 입력하세요"
+            />
+          )
+        ) : (
+          <>
+            <ResultMessage>{result}</ResultMessage>
+            <CommentBox>
+              {currentQuestion.quiz_comment || "해설이 없습니다."}
+            </CommentBox>
+          </>
+        )}
+
+        {/* 버튼 UI */}
+        {!result ? (
+          <SubmitButton onClick={handleSubmitAnswer} disabled={!selectedAnswer}>
+            제출하기
+          </SubmitButton>
+        ) : isLastQuestion ? (
+          <HomeButton onClick={() => navigate("/")}>홈으로 가기</HomeButton>
+        ) : (
+          <NextButton onClick={handleNextQuestion}>다음 문제</NextButton>
+        )}
+      </>
+    );
   };
 
-  // ✅ 다음 문제로 이동
+  // 정답 제출 및 채점
+  const handleSubmitAnswer = async () => {
+    if (!selectedAnswer) return;
+
+    const currentQuestion = quizData[currentIndex] || {};
+    const isCorrect = selectedAnswer === currentQuestion.correct;
+    setResult(isCorrect ? "정답 ✅" : "오답 ❌");
+
+    // 정답 여부 저장 (누적)
+    setQuizResults((prev) => [
+      ...prev,
+      { quiz_id: currentQuestion.id, is_correct: isCorrect ? "True" : "False" },
+    ]);
+
+    // 마지막 문제이면 마지막 문제 제출 플래그 ON
+    if (currentIndex === quizData.length - 1) {
+      setIsLastSubmitted(true);
+    }
+  };
+
+  // 다음 문제로 이동
   const handleNextQuestion = () => {
-    setResult(null); // ✅ 결과 초기화
-    setSelectedAnswer(""); // ✅ 선택한 답 초기화
+    setResult(null);
+    setSelectedAnswer("");
     setCurrentIndex((prev) => prev + 1);
   };
 
   return (
     <Container>
       <NavigationBar />
-      <QuestionTitle>{currentQuestion.quiz_content}</QuestionTitle>
-
-      {/* ✅ 문제 풀이 단계 */}
-      {!result ? (
-        isMultipleChoice ? (
-          <Options>
-            {currentQuestion.choices.map((choice) => (
-              <OptionButton
-                key={choice}
-                onClick={() => setSelectedAnswer(choice)}
-                selected={selectedAnswer === choice}
-              >
-                {choice}
-              </OptionButton>
-            ))}
-          </Options>
-        ) : (
-          <InputAnswer
-            type="text"
-            value={selectedAnswer}
-            onChange={(e) => setSelectedAnswer(e.target.value)}
-            placeholder="정답을 입력하세요"
-          />
-        )
-      ) : (
-        <>
-          <ResultMessage>{result}</ResultMessage>
-          <CommentBox>{currentQuestion.quiz_comment}</CommentBox>
-        </>
-      )}
-
-      {/* ✅ 버튼 UI */}
-      {!result ? (
-        <SubmitButton onClick={handleSubmitAnswer} disabled={!selectedAnswer}>
-          제출하기
-        </SubmitButton>
-      ) : isLastQuestion ? (
-        <HomeButton onClick={() => navigate("/")}>홈으로 가기</HomeButton>
-      ) : (
-        <NextButton onClick={handleNextQuestion}>다음 문제</NextButton>
-      )}
+      {renderContent()}
     </Container>
   );
 };
 
 export default PracticeQuiz;
 
-/* ✅ 스타일 */
+/* 스타일 */
 const Container = styled.div`
   display: flex;
   flex-direction: column;
@@ -139,7 +145,7 @@ const Container = styled.div`
 `;
 
 const QuestionTitle = styled.h2`
-  margin-top: 30px; /* ✅ 위쪽 여백 추가 */
+  margin-top: 30px;
   margin-bottom: 2rem;
   font-size: 24px;
   text-align: center;
