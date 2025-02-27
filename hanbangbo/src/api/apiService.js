@@ -1,12 +1,37 @@
+import { calculatePeriod } from "../utils/convertPeriod";
+import { getUserId } from "../utils/userId";
 import api from "./api";
 
+let cachedUserId = null; // 전역 변수로 userId 캐싱
+const getCachedUserId = () => {
+  if (!cachedUserId) {
+    cachedUserId = getUserId();
+  }
+  return cachedUserId;
+};
+
 // ✅ 데이터 가져오기 (GET)
-export const fetchNewsData = async () => {
+export const fetchQuestions = async (
+  quizType,
+  source,
+  startPeriod,
+  endPeriod
+) => {
   try {
-    const response = await api.get("/news");
+    const period = calculatePeriod(startPeriod, endPeriod); // ✅ 기간 변환
+    if (!period) throw new Error("기간이 유효하지 않습니다.");
+
+    const requestBody = {
+      user: getCachedUserId(),
+      type_value: quizType,
+      source_value: source,
+      period,
+    };
+
+    const response = await api.post("/save_user_choice", requestBody);
     return response.data;
   } catch (error) {
-    console.error("뉴스 데이터를 가져오는 중 오류 발생:", error);
+    console.error("❌ 문제 요청 실패:", error);
     throw error;
   }
 };

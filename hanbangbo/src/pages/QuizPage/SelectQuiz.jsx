@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { fetchQuestions } from "../../api/apiService";
 import NavigationBar from "../../components/common/NavigationBar";
 
 const SelectQuiz = () => {
@@ -14,14 +15,19 @@ const SelectQuiz = () => {
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth() + 1;
 
+  let sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+  const minYear = sixMonthsAgo.getFullYear();
+  const minMonth = sixMonthsAgo.getMonth() + 1; // ✅ (1월 = 0이므로 +1)
+
   const periods = [];
-  for (let year = currentYear; year >= currentYear - 1; year--) {
+  for (let year = currentYear; year >= minYear; year--) {
     for (
       let month = year === currentYear ? currentMonth : 12;
-      month >= 1;
+      month >= (year === minYear ? minMonth : 1);
       month--
     ) {
-      const formattedMonth = month < 10 ? `0${month}` : month;
+      const formattedMonth = month < 10 ? `0${month}` : month; // ✅ 01, 02 형식 유지
       periods.push({
         value: `${year}-${formattedMonth}`,
         label: `${year}년 ${month}월`,
@@ -42,11 +48,22 @@ const SelectQuiz = () => {
 
   const isFormValid = quizTypes.length > 0 && mode && startPeriod && endPeriod;
 
-  const handleStartQuiz = () => {
-    if (mode === "practice") {
-      navigate("/quiz/practice");
-    } else if (mode === "test") {
-      navigate("/quiz/test");
+  const handleStartQuiz = async () => {
+    try {
+      const questions = await fetchQuestions(
+        quizTypes,
+        mode,
+        startPeriod,
+        endPeriod
+      );
+      console.log("📌 문제 데이터:", questions);
+      if (mode === "practice") {
+        navigate("/quiz/practice");
+      } else if (mode === "test") {
+        navigate("/quiz/test");
+      }
+    } catch (error) {
+      console.error("❌ 문제 요청 중 오류 발생:", error);
     }
   };
 

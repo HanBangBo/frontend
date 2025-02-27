@@ -7,6 +7,7 @@ import KeywordSelection from "../components/landing/KeywordSelection";
 import LandingBanner from "../components/landing/LandingBanner";
 import NewsSelection from "../components/landing/NewsSelection";
 
+
 const LandingPage = () => {
   return (
     <Container>
