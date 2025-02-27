@@ -2,6 +2,7 @@ import React from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import GlobalStyle from "./assets/styles/GlobalStyle";
 import ScrollToTopButton from "./components/common/ScrollToTopButton";
+import ErrorPage from "./pages/ErrorPage";
 import LandingPage from "./pages/LandingPage";
 import PracticeQuiz from "./pages/QuizPage/PracticeQuiz";
 import ResultPage from "./pages/QuizPage/ResultPage";
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/quiz/practice" element={<PracticeQuiz />} />
         <Route path="/quiz/test" element={<TestQuiz />} />
         <Route path="/quiz/result" element={<ResultPage />} />
+        <Route path="/error" element={<ErrorPage />} />
       </Routes>
       <ScrollToTopButton />
     </Router>

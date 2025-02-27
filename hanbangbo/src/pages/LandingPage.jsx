@@ -3,7 +3,9 @@ import styled from "styled-components";
 import Footer from "../components/common/Footer";
 import Header from "../components/common/Header";
 import FeatureSection from "../components/landing/FeatureSection";
+import KeywordSelection from "../components/landing/KeywordSelection";
 import LandingBanner from "../components/landing/LandingBanner";
+import NewsSelection from "../components/landing/NewsSelection";
 
 const LandingPage = () => {
   return (
@@ -12,6 +14,8 @@ const LandingPage = () => {
       <Main>
         <ContentWrapper>
           <LandingBanner />
+          <NewsSelection />
+          <KeywordSelection />
           <FeatureSection />
         </ContentWrapper>
       </Main>

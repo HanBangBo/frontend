@@ -1,17 +1,11 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const LandingBanner = () => {
-  const navigate = useNavigate();
-
   return (
     <Banner>
-      <h1>환영합니다! 🏆</h1>
+      <h1>환영합니다!</h1>
       <p>한방보에서 실력을 키워보세요!</p>
-      <StartButton onClick={() => navigate("/quiz/select")}>
-        문제 풀기 시작하기
-      </StartButton>
     </Banner>
   );
 };
@@ -40,21 +34,5 @@ const Banner = styled.section`
   p {
     font-size: 1.2rem;
     margin-top: 10px;
-  }
-`;
-
-const StartButton = styled.button`
-  margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 18px;
-  color: white;
-  background-color: #ff6b6b;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.3s;
-
-  &:hover {
-    background-color: #e63946;
   }
 `;

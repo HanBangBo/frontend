@@ -1,14 +1,27 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import styled from "styled-components";
 
 const NavigationBar = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const source = queryParams.get("source");
+  const keyword = queryParams.get("keyword");
+
+  let title = "";
+  if (location.pathname.includes("quiz/select")) {
+    title = source
+      ? `${source} 문제`
+      : keyword
+      ? `${keyword} 문제`
+      : "문제 선택";
+  } else if (location.pathname.includes("quiz/practice")) {
+    title = "연습 모드";
+  }
 
   return (
     <NavBar>
-      <Button onClick={() => navigate(-1)}>← 뒤로 가기</Button>
-      <Button onClick={() => navigate("/")}>Home</Button>
+      <NavTitle>{title}</NavTitle>
     </NavBar>
   );
 };
@@ -17,7 +30,7 @@ export default NavigationBar;
 
 const NavBar = styled.nav`
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   width: 100%;
   max-width: 1200px;
@@ -27,17 +40,8 @@ const NavBar = styled.nav`
   margin-bottom: 20px;
 `;
 
-const Button = styled.button`
-  padding: 8px 16px;
-  font-size: 16px;
-  background-color: #2575fc;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-
-  &:hover {
-    background-color: #1a5ed8;
-  }
+const NavTitle = styled.div`
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
 `;

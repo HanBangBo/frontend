@@ -5,17 +5,14 @@ import NavigationBar from "../../components/common/NavigationBar";
 
 const SelectQuiz = () => {
   const navigate = useNavigate();
-  // 키워드 리스트
-  const keywords = ["정치", "경제", "사회", "국제", "문화", "과학"];
 
-  const [quizType, setQuizType] = useState(""); // 문제 유형
-  const [mode, setMode] = useState(""); // 퀴즈 모드
-  const [keyword, setKeyword] = useState(""); // 키워드
-  const [startPeriod, setStartPeriod] = useState(""); // 시작 기간 (YYYY-MM)
-  const [endPeriod, setEndPeriod] = useState(""); // 종료 기간 (YYYY-MM)
+  const [quizTypes, setQuizTypes] = useState([]);
+  const [mode, setMode] = useState("");
+  const [startPeriod, setStartPeriod] = useState("");
+  const [endPeriod, setEndPeriod] = useState("");
 
   const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1; // 1월 = 0
+  const currentMonth = new Date().getMonth() + 1;
 
   const periods = [];
   for (let year = currentYear; year >= currentYear - 1; year--) {
@@ -24,7 +21,7 @@ const SelectQuiz = () => {
       month >= 1;
       month--
     ) {
-      const formattedMonth = month < 10 ? `0${month}` : month; // 01, 02 형식 유지
+      const formattedMonth = month < 10 ? `0${month}` : month;
       periods.push({
         value: `${year}-${formattedMonth}`,
         label: `${year}년 ${month}월`,
@@ -32,7 +29,6 @@ const SelectQuiz = () => {
     }
   }
 
-  // 종료 기간 옵션 필터링 (startPeriod 이후의 기간만 표시 & 현재 연도 월까지만 선택 가능)
   const filteredEndPeriods = startPeriod
     ? periods.filter(
         (p) =>
@@ -44,7 +40,7 @@ const SelectQuiz = () => {
       )
     : periods;
 
-  const isFormValid = quizType && mode && keyword && startPeriod && endPeriod;
+  const isFormValid = quizTypes.length > 0 && mode && startPeriod && endPeriod;
 
   const handleStartQuiz = () => {
     if (mode === "practice") {
@@ -54,121 +50,172 @@ const SelectQuiz = () => {
     }
   };
 
-  // 키워드 선택 핸들러
-  const handleKeywordClick = (selectedKeyword) => {
-    setKeyword(selectedKeyword === keyword ? "" : selectedKeyword); // 같은 버튼 클릭 시 선택 해제
+  const toggleQuizType = (type) => {
+    setQuizTypes((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+    );
   };
 
   return (
     <Container>
       <NavigationBar />
-      <h1>퀴즈 모드 선택</h1>
+      <FullHeightContainer>
+        <SelectionContainer>
+          {/* 문제 유형 */}
+          <SelectionBlock>
+            <Label>문제 유형</Label>
+            <ButtonGroup>
+              <ModeButton
+                selected={quizTypes.includes("multiple")}
+                onClick={() => toggleQuizType("multiple")}
+              >
+                객관식
+              </ModeButton>
+              <ModeButton
+                selected={quizTypes.includes("subjective")}
+                onClick={() => toggleQuizType("subjective")}
+              >
+                주관식
+              </ModeButton>
+            </ButtonGroup>
+          </SelectionBlock>
 
-      <Label>문제 유형</Label>
-      <Select value={quizType} onChange={(e) => setQuizType(e.target.value)}>
-        <option value="">선택하세요</option>
-        <option value="multiple">객관식</option>
-        <option value="subjective">주관식</option>
-      </Select>
+          {/* 세로 구분선 */}
+          <Divider />
 
-      <Label>퀴즈 모드</Label>
-      <ButtonGroup>
-        <ModeButton
-          selected={mode === "practice"}
-          onClick={() => setMode("practice")}
-        >
-          연습 모드
-        </ModeButton>
-        <ModeButton selected={mode === "test"} onClick={() => setMode("test")}>
-          실전 모드
-        </ModeButton>
-      </ButtonGroup>
+          {/* 퀴즈 모드 */}
+          <SelectionBlock>
+            <Label>퀴즈 모드</Label>
+            <ButtonGroup>
+              <ModeButton
+                selected={mode === "practice"}
+                onClick={() => setMode("practice")}
+              >
+                연습 모드
+              </ModeButton>
+              <ModeButton
+                selected={mode === "test"}
+                onClick={() => setMode("test")}
+              >
+                실전 모드
+              </ModeButton>
+            </ButtonGroup>
+          </SelectionBlock>
 
-      <Label>키워드 선택</Label>
-      <KeywordContainer>
-        {keywords.map((item) => (
-          <KeywordButton
-            key={item}
-            selected={keyword === item}
-            onClick={() => handleKeywordClick(item)}
-          >
-            {item}
-          </KeywordButton>
-        ))}
-      </KeywordContainer>
+          {/* 세로 구분선 */}
+          <Divider />
 
-      <Label>기간 선택</Label>
-      <DateSelection>
-        <Select
-          value={startPeriod}
-          onChange={(e) => setStartPeriod(e.target.value)}
-        >
-          <option value="">시작 기간 선택</option>
-          {periods.map((period) => (
-            <option key={period.value} value={period.value}>
-              {period.label}
-            </option>
-          ))}
-        </Select>
-        <span>~</span>
-        <Select
-          value={endPeriod}
-          onChange={(e) => setEndPeriod(e.target.value)}
-          disabled={!startPeriod}
-        >
-          <option value="">종료 기간 선택</option>
-          {filteredEndPeriods.map((period) => (
-            <option key={period.value} value={period.value}>
-              {period.label}
-            </option>
-          ))}
-        </Select>
-      </DateSelection>
+          {/* 기간 선택 */}
+          <SelectionBlock>
+            <Label>기간 선택</Label>
+            <DateSelection>
+              <Select
+                value={startPeriod}
+                onChange={(e) => setStartPeriod(e.target.value)}
+              >
+                <option value="">시작 기간</option>
+                {periods.map((period) => (
+                  <option key={period.value} value={period.value}>
+                    {period.label}
+                  </option>
+                ))}
+              </Select>
+              <span>~</span>
+              <Select
+                value={endPeriod}
+                onChange={(e) => setEndPeriod(e.target.value)}
+                disabled={!startPeriod}
+              >
+                <option value="">종료 기간</option>
+                {filteredEndPeriods.map((period) => (
+                  <option key={period.value} value={period.value}>
+                    {period.label}
+                  </option>
+                ))}
+              </Select>
+            </DateSelection>
+          </SelectionBlock>
+        </SelectionContainer>
 
-      <StartButton onClick={handleStartQuiz} disabled={!isFormValid}>
-        시작하기
-      </StartButton>
+        <StartButton onClick={handleStartQuiz} disabled={!isFormValid}>
+          시작하기
+        </StartButton>
+      </FullHeightContainer>
     </Container>
   );
 };
 
 export default SelectQuiz;
 
+/* ✅ 스타일 */
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 600px;
-  margin: auto;
-  padding: 0 20px 20px 20px;
+  width: 100%;
+  height: 100vh;
 `;
 
-const Label = styled.label`
+const FullHeightContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center; /* ✅ 전체 페이지 중앙 정렬 */
+  flex-grow: 1;
+  width: 100%;
+  max-width: 1200px;
+`;
+
+const SelectionContainer = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* ✅ 3개 영역 균등 배치 */
+  width: 100%;
+  height: 250px;
+  max-width: 900px;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+`;
+
+const SelectionBlock = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+`;
+
+const Divider = styled.div`
+  width: 1px;
+  height: 100px;
+  background: #ccc;
+  margin: 0 15px;
+`;
+
+const Label = styled.div`
   font-size: 18px;
-  margin-top: 15px;
-`;
-
-const Select = styled.select`
-  padding: 8px;
-  font-size: 16px;
-  margin-top: 5px;
+  font-weight: bold;
+  margin-bottom: 15px;
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  margin-top: 10px;
 `;
 
 const ModeButton = styled.button`
-  flex: 1;
-  padding: 10px;
+  width: 100%;
+  padding: 12px;
   font-size: 16px;
-  cursor: pointer;
   background: ${(props) => (props.selected ? "#2575fc" : "#f3f3f3")};
   color: ${(props) => (props.selected ? "white" : "black")};
   border: none;
   border-radius: 5px;
+  cursor: pointer;
   transition: 0.3s;
 
   &:hover {
@@ -177,42 +224,22 @@ const ModeButton = styled.button`
   }
 `;
 
-const KeywordContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-`;
-
-const KeywordButton = styled.button`
-  flex: 1;
-  min-width: 80px;
-  padding: 10px;
-  font-size: 16px;
-  cursor: pointer;
-  background: ${(props) => (props.selected ? "#ff6b6b" : "#f3f3f3")};
-  color: ${(props) => (props.selected ? "white" : "black")};
-  border: none;
-  border-radius: 5px;
-  transition: 0.3s;
-
-  &:hover {
-    background: #ff6b6b;
-    color: white;
-  }
-`;
-
 const DateSelection = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 5px;
+`;
+
+const Select = styled.select`
+  padding: 8px;
+  font-size: 16px;
 `;
 
 const StartButton = styled.button`
   margin-top: 20px;
   padding: 12px 24px;
   font-size: 18px;
+  font-weight: 600;
   color: white;
   background-color: ${(props) => (props.disabled ? "#ccc" : "#ff6b6b")};
   border: none;

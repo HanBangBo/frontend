@@ -52,7 +52,6 @@ const PracticeQuiz = () => {
   return (
     <Container>
       <NavigationBar />
-      <h1>연습 모드</h1>
       <Question>{currentQuestion.question}</Question>
       <Options>
         {currentQuestion.options.map((option, index) => (
@@ -96,6 +95,7 @@ const Container = styled.div`
 
 const Question = styled.h2`
   font-size: 24px;
+  margin-top: 50px;
   margin-bottom: 20px;
 `;
 
