@@ -1,3 +1,10 @@
+name: Frontend Docker Image CI
+
+on:
+  push:
+    branches:
+      - ci-test 
+      
 jobs:
   build:
     runs-on: ubuntu-latest
