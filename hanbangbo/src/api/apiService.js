@@ -28,7 +28,7 @@ export const fetchQuestions = async (
       period,
     };
 
-    const response = await api.post("/save_user_choice", requestBody);
+    const response = await api.post("/user/choice/", requestBody);
     return response.data;
   } catch (error) {
     console.error("❌ 문제 요청 실패:", error);
@@ -45,7 +45,7 @@ export const submitQuizAnswer = async (quizId, answer) => {
       is_correct: answer,
     };
 
-    const response = await api.post(`/process_quiz_result`, requestBody);
+    const response = await api.post(`/quiz/result/`, requestBody);
     return response.data;
   } catch (error) {
     console.error("❌ 답안 제출 실패:", error);

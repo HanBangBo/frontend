@@ -27,13 +27,14 @@ const ResultPage = () => {
   const navigate = useNavigate();
   const { answers } = location.state || { answers: [] };
 
-  // 문제 데이터 예시
+  // 문제 데이터 예시 (quiz_comment 추가)
   const questions = Array.from({ length: 20 }, (_, i) => ({
     id: i + 1,
     question: `문제 ${i + 1}: 이곳에 문제 내용이 들어갑니다.`,
     type: i % 2 === 0 ? "multiple" : "subjective",
-    category: ["정치", "경제", "사회", "국제", "문화", "과학"][i % 6], // 랜덤한 분야
+    category: ["정치", "경제", "사회", "국제", "문화", "과학"][i % 6],
     correctAnswer: "정답 예시",
+    quiz_comment: `문제 ${i + 1} 해설 예시`, // 해설 추가
   }));
 
   // 맞춘 문제 & 틀린 문제 계산
@@ -74,8 +75,9 @@ const ResultPage = () => {
 
   return (
     <Container>
-      {/* ✅ 좌측 상단에 고정된 홈으로 가기 버튼 */}
-      <HomeButton onClick={() => navigate("/")}>Home</HomeButton>
+      <TopNav>
+        <NavHomeButton onClick={() => navigate("/")}>Home</NavHomeButton>
+      </TopNav>
 
       <h1>결과 페이지</h1>
       <ScoreBox>
@@ -84,15 +86,15 @@ const ResultPage = () => {
         <IncorrectText>{incorrectAnswers.length}개 오답 ❌</IncorrectText>
       </ScoreBox>
 
-      {/* 분야별 틀린 문제 차트 */}
       <ChartContainer>
         <h3>틀린 문제 분석</h3>
         <Bar data={chartData} key={JSON.stringify(chartData)} />
       </ChartContainer>
 
-      {/* 틀린 문제 리스트 */}
       <IncorrectList>
-        <h3>틀린 문제 목록</h3>
+        <QuestionTitle>
+          <h3>틀린 문제 목록</h3>
+        </QuestionTitle>
         {questions
           .map((q, index) =>
             answers[index] !== q.correctAnswer
@@ -102,21 +104,13 @@ const ResultPage = () => {
           .filter(Boolean)
           .map((q) => (
             <QuestionItem key={q.id}>
-              <p>
-                <strong>{q.question}</strong>
-              </p>
+              <QuestionTitleText>{q.question}</QuestionTitleText>
               <p>❌ 당신의 답변: {q.userAnswer}</p>
               <p>✅ 정답: {q.correctAnswer}</p>
+              <p>해설: {q.quiz_comment}</p>
             </QuestionItem>
           ))}
       </IncorrectList>
-
-      {/* 버튼 영역 */}
-      <ButtonContainer>
-        <RetryButton onClick={() => navigate("/test")}>
-          다시 도전하기
-        </RetryButton>
-      </ButtonContainer>
     </Container>
   );
 };
@@ -128,38 +122,42 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 0 20px 20px 20px;
 `;
 
-/* ✅ 홈으로 가기 버튼을 좌측 상단에 고정 */
-const HomeButton = styled.button`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  padding: 10px 16px;
-  font-size: 16px;
-  background: #2575fc;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  z-index: 1000;
+const TopNav = styled.nav`
+  width: 100%;
+  height: 75px;
+  background-color: #283556;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
+`;
 
+const NavHomeButton = styled.button`
+  font-size: 16px;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
   &:hover {
-    background: #1a5ed8;
+    text-decoration: underline;
   }
 `;
 
 const ScoreBox = styled.div`
   text-align: center;
   margin-bottom: 20px;
+  margin-top: 20px;
 `;
 
-const CorrectText = styled.h2`
+const CorrectText = styled.h3`
   color: green;
 `;
 
-const IncorrectText = styled.h2`
+const IncorrectText = styled.h3`
   color: red;
 `;
 
@@ -173,31 +171,26 @@ const IncorrectList = styled.div`
   width: 80%;
   max-width: 600px;
   margin-top: 20px;
+  margin-bottom: 40px; /* 여백 확장 */
   text-align: left;
 `;
 
 const QuestionItem = styled.div`
   background: #f8f8f8;
-  padding: 10px;
+  padding: 20px;
   border-radius: 8px;
-  margin-bottom: 10px;
-`;
-
-const ButtonContainer = styled.div`
-  display: flex;
-  gap: 15px;
-  margin-top: 20px;
-`;
-
-const RetryButton = styled.button`
-  padding: 12px 20px;
-  font-size: 16px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  &:hover {
-    background: #388e3c;
+  margin-bottom: 20px;
+  p {
+    margin: 0.5rem 0; /* 각 줄 사이의 간격 확대 */
   }
+`;
+
+const QuestionTitle = styled.div`
+  margin-bottom: 20px;
+`;
+
+const QuestionTitleText = styled.p`
+  font-size: 20px; /* 문제 제목 글자 크기 확대 */
+  font-weight: bold;
+  margin-bottom: 12px; /* 제목과 다음 내용 사이 여백 */
 `;

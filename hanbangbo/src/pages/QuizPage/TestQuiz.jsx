@@ -1,33 +1,28 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { submitQuizAnswer } from "../../api/apiService";
 
 const TestQuiz = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // 20문제 더미 데이터
-  const questions = Array.from({ length: 20 }, (_, i) => ({
-    id: i + 1,
-    question: `문제 ${i + 1}: 이곳에 문제 내용이 들어갑니다.`,
-    type: i % 2 === 0 ? "multiple" : "subjective", // 홀수는 주관식, 짝수는 객관식
-    choices: ["선택지 1", "선택지 2", "선택지 3", "선택지 4"],
-    answer: "",
-  }));
+  // 전달된 quizData가 있다면 사용하고, 없으면 빈 배열로 설정
+  const quizData = location.state?.quizData || [];
 
+  // 모든 Hook은 항상 최상위에서 호출
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState(Array(20).fill(null));
-  const [timeLeft, setTimeLeft] = useState(5); // 20분 타이머 (초 단위)
+  const [answers, setAnswers] = useState(Array(quizData.length).fill(null));
+  const [timeLeft, setTimeLeft] = useState(10); // 예시: 10초 타이머
 
-  // 제한 시간 초과 시 자동 제출 (미답안은 "오답" 처리)
   const handleTimeOverSubmit = useCallback(() => {
     const completedAnswers = answers.map((ans) =>
       ans === null ? "오답" : ans
     );
     alert("시간 종료! 답안을 자동 제출합니다.");
     navigate("/quiz/result", { state: { answers: completedAnswers } });
-  }, [navigate, answers]); // `navigate`만 의존성으로 설정
+  }, [navigate, answers]);
 
-  // 타이머 동작
   useEffect(() => {
     if (timeLeft <= 0) {
       handleTimeOverSubmit();
@@ -37,107 +32,129 @@ const TestQuiz = () => {
     return () => clearInterval(timer);
   }, [timeLeft, handleTimeOverSubmit]);
 
-  // 문제 답변 저장
   const handleAnswerChange = (answer) => {
     const newAnswers = [...answers];
     newAnswers[currentIndex] = answer;
     setAnswers(newAnswers);
   };
 
-  // 문제 번호 클릭 시 이동
   const goToQuestion = (index) => setCurrentIndex(index);
-
-  // 이전/다음 문제 이동
   const prevQuestion = () => setCurrentIndex((prev) => Math.max(prev - 1, 0));
   const nextQuestion = () =>
-    setCurrentIndex((prev) => Math.min(prev + 1, questions.length - 1));
+    setCurrentIndex((prev) => Math.min(prev + 1, quizData.length - 1));
 
-  // 모든 문제를 풀었을 때만 제출 가능
   const isAllAnswered = answers.every(
     (answer) => answer !== null && answer !== ""
   );
 
-  // 문제 제출
-  const handleSubmit = () => {
+  // 모든 문제 제출 시, 각 문제의 정답 여부를 백엔드로 전송
+  const submitResults = async () => {
+    try {
+      const results = quizData.map((q, index) => ({
+        quiz_id: q.id,
+        is_correct: answers[index] === q.correct ? "True" : "False",
+      }));
+      const quizIds = results.map((r) => r.quiz_id);
+      const isCorrectArray = results.map((r) => r.is_correct);
+      await submitQuizAnswer(quizIds, isCorrectArray);
+      console.log("✅ 문제 풀이 결과 전송 완료!");
+    } catch (error) {
+      console.error("❌ 문제 풀이 결과 전송 실패:", error);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!isAllAnswered) {
       alert("모든 문제를 풀어야 제출할 수 있습니다.");
       return;
     }
+    await submitResults();
     alert("답안이 제출되었습니다!");
-    navigate("/quiz/result"); // 제출 후 결과 페이지로 이동
+    navigate("/quiz/result", { state: { answers } });
   };
 
   return (
     <Container>
-      {/* 왼쪽 문제 목록 패널 */}
-      <Sidebar>
-        <Title>문제 목록</Title>
-        <QuestionList>
-          {questions.map((_, index) => (
-            <QuestionButton
-              key={index}
-              answered={answers[index] !== null && answers[index] !== ""}
-              onClick={() => goToQuestion(index)}
-            >
-              {index + 1}
-            </QuestionButton>
-          ))}
-        </QuestionList>
-        <SubmitButton disabled={!isAllAnswered} onClick={handleSubmit}>
-          문제 제출
-        </SubmitButton>
-      </Sidebar>
-
-      {/* 오른쪽 문제 풀이 영역 */}
-      <MainContent>
-        {/* 타이머 */}
-        <Header>
-          <Timer>
-            {Math.floor(timeLeft / 60)}:{String(timeLeft % 60).padStart(2, "0")}
-          </Timer>
-          <SubmitButton disabled={!isAllAnswered} onClick={handleSubmit}>
-            문제 제출
-          </SubmitButton>
-        </Header>
-
-        {/* 현재 문제 표시 */}
-        <QuestionContent>
-          <h2>{questions[currentIndex].question}</h2>
-          {questions[currentIndex].type === "multiple" ? (
-            <Choices>
-              {questions[currentIndex].choices.map((choice, i) => (
-                <ChoiceButton
-                  key={i}
-                  selected={answers[currentIndex] === choice}
-                  onClick={() => handleAnswerChange(choice)}
+      {quizData.length === 0 ? (
+        <Message>문제 데이터가 없습니다. 다시 시도해주세요.</Message>
+      ) : (
+        <>
+          {/* 왼쪽 문제 목록 패널 */}
+          <Sidebar>
+            <Title>문제 목록</Title>
+            <QuestionList>
+              {quizData.map((_, index) => (
+                <QuestionButton
+                  key={index}
+                  answered={answers[index] !== null && answers[index] !== ""}
+                  onClick={() => goToQuestion(index)}
                 >
-                  {choice}
-                </ChoiceButton>
+                  {index + 1}
+                </QuestionButton>
               ))}
-            </Choices>
-          ) : (
-            <Input
-              type="text"
-              placeholder="답을 입력하세요"
-              value={answers[currentIndex] || ""}
-              onChange={(e) => handleAnswerChange(e.target.value)}
-            />
-          )}
-        </QuestionContent>
+            </QuestionList>
+            <SubmitButton disabled={!isAllAnswered} onClick={handleSubmit}>
+              문제 제출
+            </SubmitButton>
+          </Sidebar>
 
-        {/* 이전/다음 문제 버튼 */}
-        <Navigation>
-          <NavButton onClick={prevQuestion} disabled={currentIndex === 0}>
-            이전 문제
-          </NavButton>
-          <NavButton
-            onClick={nextQuestion}
-            disabled={currentIndex === questions.length - 1}
-          >
-            다음 문제
-          </NavButton>
-        </Navigation>
-      </MainContent>
+          {/* 오른쪽 문제 풀이 영역 */}
+          <MainContent>
+            <Header>
+              <Timer>
+                {Math.floor(timeLeft / 60)}:
+                {String(timeLeft % 60).padStart(2, "0")}
+              </Timer>
+              <SubmitButton disabled={!isAllAnswered} onClick={handleSubmit}>
+                문제 제출
+              </SubmitButton>
+            </Header>
+
+            <QuestionContent>
+              <h1>{quizData[currentIndex].question}</h1>
+              <AnswerContainer>
+                {quizData[currentIndex].type === "multiple" ? (
+                  <Choices>
+                    {quizData[currentIndex].choices.map((choice, i) => (
+                      <ChoiceButton
+                        key={i}
+                        selected={answers[currentIndex] === choice}
+                        onClick={() => handleAnswerChange(choice)}
+                      >
+                        {choice}
+                      </ChoiceButton>
+                    ))}
+                  </Choices>
+                ) : (
+                  <Input
+                    type="text"
+                    placeholder="답을 입력하세요"
+                    onFocus={(e) => (e.target.placeholder = "")}
+                    onBlur={(e) =>
+                      e.target.value === "" &&
+                      (e.target.placeholder = "답을 입력하세요")
+                    }
+                    value={answers[currentIndex] || ""}
+                    onChange={(e) => handleAnswerChange(e.target.value)}
+                  />
+                )}
+              </AnswerContainer>
+            </QuestionContent>
+
+            <Navigation>
+              <NavButton onClick={prevQuestion} disabled={currentIndex === 0}>
+                이전 문제
+              </NavButton>
+              <NavButton
+                onClick={nextQuestion}
+                disabled={currentIndex === quizData.length - 1}
+              >
+                다음 문제
+              </NavButton>
+            </Navigation>
+          </MainContent>
+        </>
+      )}
     </Container>
   );
 };
@@ -150,8 +167,14 @@ const Container = styled.div`
   height: 100vh;
 `;
 
+const Message = styled.p`
+  text-align: center;
+  font-size: 20px;
+  margin: auto;
+`;
+
 const Sidebar = styled.div`
-  width: 25%;
+  width: 20%;
   background: #f7f7f7;
   padding: 20px;
   display: flex;
@@ -160,25 +183,27 @@ const Sidebar = styled.div`
 
 const Title = styled.h3`
   text-align: center;
+  font-size: 24px;
 `;
 
 const QuestionList = styled.div`
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(4, 1fr);
+  row-gap: 50px;
+  column-gap: 15px;
   margin: 20px 0;
+  justify-items: center;
 `;
 
 const QuestionButton = styled.button`
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   font-size: 16px;
   border: none;
-  border-radius: 50%;
+  border-radius: 8px;
   background: ${({ answered }) => (answered ? "#4caf50" : "#ddd")};
   color: white;
   cursor: pointer;
-
   &:hover {
     background: #2196f3;
   }
@@ -193,7 +218,6 @@ const SubmitButton = styled.button`
   border: none;
   border-radius: 5px;
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "pointer")};
-
   &:hover {
     background: ${({ disabled }) => (disabled ? "#ccc" : "#e63946")};
   }
@@ -222,24 +246,48 @@ const QuestionContent = styled.div`
   margin: 20px 0;
 `;
 
+const AnswerContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  width: 100%;
+`;
+
 const Choices = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+  margin-top: 2rem;
 `;
 
 const ChoiceButton = styled.button`
-  padding: 10px;
-  font-size: 16px;
+  padding: 12px 16px;
+  font-size: 20px;
   background: ${({ selected }) => (selected ? "#4caf50" : "#f3f3f3")};
+  color: ${({ selected }) => (selected ? "#000" : "#333")};
+  font-weight: ${({ selected }) => (selected ? "bold" : "normal")};
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: ${({ selected }) =>
+    selected ? "0px 4px 8px rgba(0, 0, 0, 0.3)" : "none"};
+  transition: box-shadow 0.3s, color 0.3s;
 `;
 
 const Input = styled.input`
   padding: 10px;
-  width: 100%;
+  width: 60%;
+  font-size: 16px;
+  text-align: center;
+  margin: 2rem auto;
+  display: block;
 `;
 
 const Navigation = styled.div`

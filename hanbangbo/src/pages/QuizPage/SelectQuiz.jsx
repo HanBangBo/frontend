@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { fetchQuestions } from "../../api/apiService";
 import NavigationBar from "../../components/common/NavigationBar";
 
 const SelectQuiz = () => {
@@ -53,18 +54,17 @@ const SelectQuiz = () => {
 
   const handleStartQuiz = async () => {
     try {
-      // const response = await fetchQuestions(
-      //   quizTypes,
-      //   source ? source : keyword,
-      //   startPeriod,
-      //   endPeriod
-      // );
-      // console.log("📌 문제 데이터:", response);
+      const response = await fetchQuestions(
+        quizTypes,
+        source ? source : keyword,
+        startPeriod,
+        endPeriod
+      );
+      console.log("📌 문제 데이터:", response);
       if (mode === "practice") {
-        // navigate("/quiz/practice", { state: { quizData: response.quiz_data } });
-        navigate("/quiz/practice");
+        navigate("/quiz/practice", { state: { quizData: response.quiz_data } });
       } else if (mode === "test") {
-        navigate("/quiz/test");
+        navigate("/quiz/test", { state: { quizData: response.quiz_data } });
       }
     } catch (error) {
       console.error("❌ 문제 요청 중 오류 발생:", error);
