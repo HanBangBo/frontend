@@ -8,7 +8,7 @@ const NavigationBar = () => {
   return (
     <NavBar>
       <Button onClick={() => navigate(-1)}>← 뒤로 가기</Button>
-      <Button onClick={() => navigate("/")}>🏠 홈으로</Button>
+      <Button onClick={() => navigate("/")}>Home</Button>
     </NavBar>
   );
 };

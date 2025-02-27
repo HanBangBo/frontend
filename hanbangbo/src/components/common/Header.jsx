@@ -10,7 +10,6 @@ const Header = () => {
         <NavLinks>
           <StyledLink to="/">홈</StyledLink>
           <StyledLink to="/quiz/select">문제 풀기</StyledLink>
-          <StyledLink to="/login">로그인</StyledLink>
         </NavLinks>
       </Nav>
     </HeaderContainer>
