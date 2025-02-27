@@ -13,7 +13,10 @@ RUN yarn build
 # Nginx를 사용하여 정적 파일 배포
 FROM nginx:latest
 COPY --from=build /hanbangbo/build /usr/share/nginx/html
+
+# nginx.conf는 기본 설정만 유지, 서버 설정은 conf.d에 추가
 COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf
 
 # Nginx 실행 (React 앱을 80번 포트에서 서비스)
 EXPOSE 8080
