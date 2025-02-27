@@ -38,6 +38,7 @@ export const fetchQuestions = async (
 
 // ✅ 데이터 전송 (POST)
 export const submitQuizAnswer = async (quizId, answer) => {
+  console.log(quizId, answer);
   try {
     const requestBody = {
       user: getCachedUserId(),
