@@ -16,5 +16,5 @@ COPY --from=build /hanbangbo/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Nginx 실행 (React 앱을 80번 포트에서 서비스)
-EXPOSE 80
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]
