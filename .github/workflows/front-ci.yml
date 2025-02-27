@@ -12,10 +12,10 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: "22.14.0" # Node.js 버전 확인 필요!
+      # - name: Install Node.js
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: "22.14.0" # Node.js 버전 확인 필요!
 
       # - name: Install Dependencies
       #   run: |
