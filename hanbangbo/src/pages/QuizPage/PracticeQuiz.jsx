@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { submitQuizAnswer } from "../../api/apiService";
 import NavigationBar from "../../components/common/NavigationBar";
 
 const PracticeQuiz = () => {
@@ -15,22 +16,58 @@ const PracticeQuiz = () => {
       correct: "정답",
       quiz_comment: "이 문제는 기본 데이터입니다.",
     },
+    {
+      id: 9,
+      quiz_content: "문제 내용",
+      correct: "문제에 대한 정답",
+      quiz_comment: "문제에 대한 해설",
+      choices: [
+        "두번째 선택지",
+        "네번째 선택지",
+        "첫번째 선택지",
+        "세번째 선택지",
+      ],
+    },
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(""); // 사용자 응답
   const [result, setResult] = useState(null); // 정답 여부 결과
+  const [quizResults, setQuizResults] = useState([]); // 정답 여부 저장 배열
 
   const currentQuestion = quizData[currentIndex];
   const isMultipleChoice = !!currentQuestion.choices; // ✅ 객관식 여부 판단
   const isLastQuestion = currentIndex === quizData.length - 1;
 
   // ✅ 정답 제출 및 채점
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
     if (!selectedAnswer) return;
-    setResult(
-      selectedAnswer === currentQuestion.correct ? "정답 ✅" : "오답 ❌"
-    );
+
+    const isCorrect = selectedAnswer === currentQuestion.correct;
+    setResult(isCorrect ? "정답 ✅" : "오답 ❌");
+
+    // ✅ 정답 여부 저장 (누적)
+    setQuizResults((prev) => [
+      ...prev,
+      { quiz_id: currentQuestion.id, is_correct: isCorrect },
+    ]);
+
+    // ✅ 마지막 문제면 서버로 데이터 전송
+    if (isLastQuestion) {
+      await submitResults();
+    }
+  };
+
+  const submitResults = async () => {
+    try {
+      const quizIds = quizResults.map((item) => item.quiz_id);
+      const isCorrectArray = quizResults.map((item) => item.is_correct);
+
+      await submitQuizAnswer(quizIds, isCorrectArray);
+      console.log("✅ 문제 풀이 결과 전송 완료!");
+    } catch (error) {
+      console.error("❌ 문제 풀이 결과 전송 실패:", error);
+    }
   };
 
   // ✅ 다음 문제로 이동
@@ -43,7 +80,7 @@ const PracticeQuiz = () => {
   return (
     <Container>
       <NavigationBar />
-      <h2>{currentQuestion.quiz_content}</h2>
+      <QuestionTitle>{currentQuestion.quiz_content}</QuestionTitle>
 
       {/* ✅ 문제 풀이 단계 */}
       {!result ? (
@@ -96,15 +133,23 @@ const Container = styled.div`
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 600px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 40px;
+  padding: 0 40px 40px 40px;
+`;
+
+const QuestionTitle = styled.h2`
+  margin-top: 30px; /* ✅ 위쪽 여백 추가 */
+  margin-bottom: 2rem;
+  font-size: 24px;
+  text-align: center;
 `;
 
 const Options = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 40%;
 `;
 
 const OptionButton = styled.button`
@@ -124,7 +169,7 @@ const OptionButton = styled.button`
 `;
 
 const InputAnswer = styled.input`
-  width: 100%;
+  width: 50%;
   padding: 12px;
   font-size: 16px;
   border: 1px solid #ccc;
@@ -156,6 +201,7 @@ const ResultMessage = styled.div`
 
 const CommentBox = styled.div`
   margin-top: 20px;
+  margin-bottom: 1.5rem;
   padding: 15px;
   background: #f3f3f3;
   border-radius: 8px;
