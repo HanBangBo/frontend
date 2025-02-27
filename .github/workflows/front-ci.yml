@@ -12,12 +12,12 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          cd hanbangbo  # ✅ 기존 frontend/app에서 hanbangbo로 변경!
+          cd hanbangbo  
           npm install
 
       - name: Build React App
         run: |
-          cd hanbangbo  # ✅ 동일하게 경로 수정!
+          cd hanbangbo  
           npm run build
 
       - name: Log in to Docker Hub
