@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://3.37.189.41:8000/api"; // ✅ 백엔드 API 주소 입력
+const BASE_URL = "/api"; // ✅ 백엔드 API 주소 입력
 
 const api = axios.create({
   baseURL: BASE_URL,
