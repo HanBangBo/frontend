@@ -51,3 +51,4 @@ jobs:
             echo "✅ GitHub API 요청 성공! 응답 코드: $RESPONSE"
           fi
 
+  # 의미 없는 변경 추가
