@@ -3,8 +3,8 @@ name: Frontend Docker Image CI
 on:
   push:
     branches:
-      - ci-test 
-      
+      - ci-test
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,26 +15,26 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.14.0'  # Node.js 버전 확인 필요!
+          node-version: "22.14.0" # Node.js 버전 확인 필요!
 
-      - name: Install Dependencies
-        run: |
-          cd hanbangbo  
-          npm install
+      # - name: Install Dependencies
+      #   run: |
+      #     cd hanbangbo
+      #     npm install
 
-      - name: Build React App
-        run: |
-          cd hanbangbo  
-          npm run build
+      # - name: Build React App
+      #   run: |
+      #     cd hanbangbo
+      #     npm run build
 
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      # - name: Log in to Docker Hub
+      #   run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/hanbangbo-front:latest
+      # - name: Build the Docker image
+      #   run: docker build . --file Dockerfile --tag ${{ secrets.DOCKER_USERNAME }}/hanbangbo-front:latest
 
-      - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/hanbangbo-front:latest
+      # - name: Push Docker image to Docker Hub
+      #   run: docker push ${{ secrets.DOCKER_USERNAME }}/hanbangbo-front:latest
 
       - name: Trigger infra-deploy repository deployment
         run: |
