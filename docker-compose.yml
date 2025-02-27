@@ -10,8 +10,6 @@ services:
       - .:/app
     ports:
       - "3000:80" # React 기본 포트 3000, Nginx에서 80으로 서빙
-    depends_on:
-      - backend_web # ✅ 백엔드 컨테이너가 실행된 후 실행
     networks:
       - shared_network # ✅ 백엔드와 같은 네트워크 사용
 
