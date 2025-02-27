@@ -1,8 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import "swiper/css";
-import "swiper/css/pagination";
 import NewsCategoryBar from "./\bNewsCategoryBar";
 
 const newsSources = [
