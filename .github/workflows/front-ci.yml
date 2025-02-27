@@ -36,17 +36,17 @@ jobs:
       - name: Push Docker image to Docker Hub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/hanbangbo-front:latest
 
-      # - name: Trigger infra-deploy repository deployment
-      #   run: |
-      #     RESPONSE=$(curl -X POST -s -o /dev/null -w "%{http_code}" \
-      #          -H "Authorization: token ${{ secrets.INFRA_DEPLOY_KEY }}" \
-      #          -H "Accept: application/vnd.github.v3+json" \
-      #          https://api.github.com/repos/HanBangBo/infra-deploy/dispatches \
-      #          -d '{"event_type":"deploy"}')
+      - name: Trigger infra-deploy repository deployment
+        run: |
+          RESPONSE=$(curl -X POST -s -o /dev/null -w "%{http_code}" \
+               -H "Authorization: token ${{ secrets.INFRA_DEPLOY_KEY }}" \
+               -H "Accept: application/vnd.github.v3+json" \
+               https://api.github.com/repos/HanBangBo/infra-deploy/dispatches \
+               -d '{"event_type":"front"}')
 
-      #     if [ "$RESPONSE" -ne 204 ]; then
-      #       echo "❌ GitHub API 요청 실패! 응답 코드: $RESPONSE"
-      #       exit 1
-      #     else
-      #       echo "✅ GitHub API 요청 성공! 응답 코드: $RESPONSE"
-      #     fi
+          if [ "$RESPONSE" -ne 204 ]; then
+            echo "❌ GitHub API 요청 실패! 응답 코드: $RESPONSE"
+            exit 1
+          else
+            echo "✅ GitHub API 요청 성공! 응답 코드: $RESPONSE"
+          fi
