@@ -1,84 +1,88 @@
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import NavigationBar from "../../components/common/NavigationBar";
 
 const PracticeQuiz = () => {
-  const questions = [
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ✅ URL로 직접 접근했을 때 대비하여 기본값 설정
+  const quizData = location.state?.quizData || [
     {
-      question: "React의 주된 특징은 무엇인가요?",
-      options: [
-        "단방향 데이터 흐름",
-        "양방향 데이터 흐름",
-        "비동기 처리",
-        "UI 라이브러리",
-      ],
-      answer: 0, // 정답은 첫 번째 옵션
-      explanation: "React는 단방향 데이터 흐름을 제공합니다.",
+      id: 1,
+      quiz_content: "기본 문제 (데이터 없음)",
+      correct: "정답",
+      quiz_comment: "이 문제는 기본 데이터입니다.",
     },
-    {
-      question: "React에서 상태 관리 라이브러리로 많이 사용되는 것은?",
-      options: ["Redux", "Vuex", "Context API", "Vue"],
-      answer: 0, // 정답은 첫 번째 옵션
-      explanation: "Redux는 React 상태 관리 라이브러리로 많이 사용됩니다.",
-    },
-    // 추가적인 문제들을 여기에 추가할 수 있음
   ];
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [showAnswer, setShowAnswer] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(""); // 사용자 응답
+  const [result, setResult] = useState(null); // 정답 여부 결과
 
-  const handleAnswerSelection = (index) => {
-    setSelectedAnswer(index);
-  };
+  const currentQuestion = quizData[currentIndex];
+  const isMultipleChoice = !!currentQuestion.choices; // ✅ 객관식 여부 판단
+  const isLastQuestion = currentIndex === quizData.length - 1;
 
+  // ✅ 정답 제출 및 채점
   const handleSubmitAnswer = () => {
-    setShowAnswer(true);
+    if (!selectedAnswer) return;
+    setResult(
+      selectedAnswer === currentQuestion.correct ? "정답 ✅" : "오답 ❌"
+    );
   };
 
+  // ✅ 다음 문제로 이동
   const handleNextQuestion = () => {
-    setSelectedAnswer(null);
-    setShowAnswer(false);
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else {
-      alert("퀴즈가 끝났습니다!");
-      // 퀴즈 종료 후 처리
-    }
+    setResult(null); // ✅ 결과 초기화
+    setSelectedAnswer(""); // ✅ 선택한 답 초기화
+    setCurrentIndex((prev) => prev + 1);
   };
-
-  const currentQuestion = questions[currentQuestionIndex];
 
   return (
     <Container>
       <NavigationBar />
-      <Question>{currentQuestion.question}</Question>
-      <Options>
-        {currentQuestion.options.map((option, index) => (
-          <Option
-            key={index}
-            onClick={() => handleAnswerSelection(index)}
-            selected={selectedAnswer === index}
-          >
-            {option}
-          </Option>
-        ))}
-      </Options>
+      <h2>{currentQuestion.quiz_content}</h2>
 
-      <Button onClick={handleSubmitAnswer} disabled={selectedAnswer === null}>
-        답 제출
-      </Button>
+      {/* ✅ 문제 풀이 단계 */}
+      {!result ? (
+        isMultipleChoice ? (
+          <Options>
+            {currentQuestion.choices.map((choice) => (
+              <OptionButton
+                key={choice}
+                onClick={() => setSelectedAnswer(choice)}
+                selected={selectedAnswer === choice}
+              >
+                {choice}
+              </OptionButton>
+            ))}
+          </Options>
+        ) : (
+          <InputAnswer
+            type="text"
+            value={selectedAnswer}
+            onChange={(e) => setSelectedAnswer(e.target.value)}
+            placeholder="정답을 입력하세요"
+          />
+        )
+      ) : (
+        <>
+          <ResultMessage>{result}</ResultMessage>
+          <CommentBox>{currentQuestion.quiz_comment}</CommentBox>
+        </>
+      )}
 
-      {showAnswer && (
-        <AnswerSection>
-          <p>
-            {selectedAnswer === currentQuestion.answer
-              ? "정답!"
-              : "틀렸습니다!"}
-          </p>
-          <Explanation>{currentQuestion.explanation}</Explanation>
-          <Button onClick={handleNextQuestion}>다음 문제</Button>
-        </AnswerSection>
+      {/* ✅ 버튼 UI */}
+      {!result ? (
+        <SubmitButton onClick={handleSubmitAnswer} disabled={!selectedAnswer}>
+          제출하기
+        </SubmitButton>
+      ) : isLastQuestion ? (
+        <HomeButton onClick={() => navigate("/")}>홈으로 가기</HomeButton>
+      ) : (
+        <NextButton onClick={handleNextQuestion}>다음 문제</NextButton>
       )}
     </Container>
   );
@@ -86,17 +90,15 @@ const PracticeQuiz = () => {
 
 export default PracticeQuiz;
 
+/* ✅ 스타일 */
 const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0 20px 20px 20px;
-`;
-
-const Question = styled.h2`
-  font-size: 24px;
-  margin-top: 50px;
-  margin-bottom: 20px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px;
 `;
 
 const Options = styled.div`
@@ -105,47 +107,94 @@ const Options = styled.div`
   gap: 10px;
 `;
 
-const Option = styled.button`
-  padding: 10px;
-  width: 300px;
-  font-size: 18px;
-  text-align: left;
-  background-color: ${(props) => (props.selected ? "#2575fc" : "#f3f3f3")};
+const OptionButton = styled.button`
+  padding: 12px;
+  font-size: 16px;
+  background: ${(props) => (props.selected ? "#2575fc" : "#f3f3f3")};
   color: ${(props) => (props.selected ? "white" : "black")};
-  border: 1px solid #ccc;
-  cursor: pointer;
+  border: none;
   border-radius: 5px;
-  transition: background-color 0.3s;
+  cursor: pointer;
+  transition: 0.3s;
 
   &:hover {
-    background-color: #2575fc;
+    background: #2575fc;
     color: white;
   }
 `;
 
-const Button = styled.button`
+const InputAnswer = styled.input`
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+`;
+
+const SubmitButton = styled.button`
   margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 18px;
-  color: white;
+  padding: 10px 20px;
+  font-size: 16px;
   background-color: ${(props) => (props.disabled ? "#ccc" : "#ff6b6b")};
+  color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 5px;
   cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-  transition: background 0.3s;
+  transition: 0.3s;
 
   &:hover {
     background-color: ${(props) => (props.disabled ? "#ccc" : "#e63946")};
   }
 `;
 
-const AnswerSection = styled.div`
+const ResultMessage = styled.div`
   margin-top: 20px;
-  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  color: ${(props) => (props.children === "정답 ✅" ? "green" : "red")};
 `;
 
-const Explanation = styled.p`
-  margin-top: 10px;
+const CommentBox = styled.div`
+  margin-top: 20px;
+  padding: 15px;
+  background: #f3f3f3;
+  border-radius: 8px;
   font-size: 16px;
-  color: #555;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  color: #333;
+`;
+
+const NextButton = styled.button`
+  margin-top: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #2575fc;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+
+  &:hover {
+    background-color: #1b5cd7;
+  }
+`;
+
+const HomeButton = styled.button`
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: 600;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+
+  &:hover {
+    background-color: #388e3c;
+  }
 `;

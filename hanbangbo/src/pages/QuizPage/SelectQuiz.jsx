@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { fetchQuestions } from "../../api/apiService";
 import NavigationBar from "../../components/common/NavigationBar";
 
 const SelectQuiz = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const source = queryParams.get("source");
+  const keyword = queryParams.get("keyword");
 
   const [quizTypes, setQuizTypes] = useState([]);
   const [mode, setMode] = useState("");
@@ -50,20 +54,27 @@ const SelectQuiz = () => {
 
   const handleStartQuiz = async () => {
     try {
-      const questions = await fetchQuestions(
+      const response = await fetchQuestions(
         quizTypes,
-        mode,
+        source ? source : keyword,
         startPeriod,
         endPeriod
       );
-      console.log("📌 문제 데이터:", questions);
+      console.log("📌 문제 데이터:", response);
       if (mode === "practice") {
-        navigate("/quiz/practice");
+        navigate("/quiz/practice", { state: { quizData: response.quiz_data } });
       } else if (mode === "test") {
         navigate("/quiz/test");
       }
     } catch (error) {
       console.error("❌ 문제 요청 중 오류 발생:", error);
+      navigate("/error", {
+        state: {
+          errorMessage:
+            error.response?.data?.message ||
+            "문제 데이터를 불러오는 중 오류가 발생했습니다.",
+        },
+      });
     }
   };
 
@@ -83,14 +94,14 @@ const SelectQuiz = () => {
             <Label>문제 유형</Label>
             <ButtonGroup>
               <ModeButton
-                selected={quizTypes.includes("multiple")}
-                onClick={() => toggleQuizType("multiple")}
+                selected={quizTypes.includes("객관식")}
+                onClick={() => toggleQuizType("객관식")}
               >
                 객관식
               </ModeButton>
               <ModeButton
-                selected={quizTypes.includes("subjective")}
-                onClick={() => toggleQuizType("subjective")}
+                selected={quizTypes.includes("주관식")}
+                onClick={() => toggleQuizType("주관식")}
               >
                 주관식
               </ModeButton>
