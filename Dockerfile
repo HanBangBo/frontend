@@ -7,7 +7,7 @@ COPY hanbangbo/package.json hanbangbo/yarn.lock ./
 RUN yarn install
 
 # 프로젝트 코드 복사 및 빌드 실행
-COPY . .
+COPY hanbangbo ./
 RUN yarn build
 
 # Nginx를 사용하여 정적 파일 배포
