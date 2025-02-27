@@ -30,6 +30,7 @@ const PracticeQuiz = () => {
 
   // 항상 useEffect를 호출해야 하므로, 조기 반환 없이 조건부 렌더링 처리
   useEffect(() => {
+    console.log(quizResults);
     if (isLastSubmitted && quizResults.length > 0) {
       submitResults();
     }
