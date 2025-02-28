@@ -1,27 +1,22 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import styled from "styled-components";
+import { submitQuizAnswer } from "../../api/apiService";
+
 
 const TestQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // 전달된 quizData가 있다면 사용하고, 없으면 빈 배열로 설정
+  // URL로 직접 접근했을 때 대비하여 기본값 설정
   const questions = location.state?.quizData || [];
-  console.log(questions);
-
-  // 20문제 더미 데이터
-  // const questions = Array.from({ length: 20 }, (_, i) => ({
-  //   id: i + 1,
-  //   question: `문제 ${i + 1}: 이곳에 문제 내용이 들어갑니다.`,
-  //   type: i % 2 === 0 ? "multiple" : "subjective", // 홀수는 주관식, 짝수는 객관식
-  //   choices: ["선택지 1", "선택지 2", "선택지 3", "선택지 4"],
-  //   answer: "",
-  // }));
-
+  
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState(Array(20).fill(null));
-  const [timeLeft, setTimeLeft] = useState(10 * 60); // 20분 타이머 (초 단위)
+  const [selectedAnswer, setSelectedAnswer] = useState(""); // 사용자 응답
+  const [result, setResult] = useState(null); // 정답 여부 결과
+  const [answers, setAnswers] = useState(Array(questions.length).fill(null));
+  const [quizResults, setQuizResults] = useState([]); // 정답 여부 저장 배열
+  const [timeLeft, setTimeLeft] = useState(2000); // 20분 타이머 (초 단위)
 
   // 제한 시간 초과 시 자동 제출 (미답안은 "오답" 처리)
   const handleTimeOverSubmit = useCallback(() => {
@@ -42,11 +37,38 @@ const TestQuiz = () => {
     return () => clearInterval(timer);
   }, [timeLeft, handleTimeOverSubmit]);
 
+    const submitResults = useCallback(async () => {
+      try {
+        const quizIds = quizResults.map((item) => item.quiz_id);
+        const isCorrectArray = quizResults.map((item) => item.is_correct);
+        await submitQuizAnswer(quizIds, isCorrectArray);
+        console.log("✅ 문제 풀이 결과 전송 완료!");
+      } catch (error) {
+        console.error("❌ 문제 풀이 결과 전송 실패:", error);
+      }
+    }, [quizResults]);
+
   // 문제 답변 저장
   const handleAnswerChange = (answer) => {
     const newAnswers = [...answers];
     newAnswers[currentIndex] = answer;
     setAnswers(newAnswers);
+    setSelectedAnswer(answer);
+    handleSubmitAnswer();
+  };
+
+  const handleSubmitAnswer = async () => {
+    if (!selectedAnswer) return;
+
+    const currentQuestion = questions[currentIndex] || {};
+    const isCorrect = selectedAnswer === currentQuestion.correct;
+    setResult(isCorrect ? "정답 ✅" : "오답 ❌");
+
+    // 정답 여부 저장 (누적)
+    setQuizResults((prev) => [
+      ...prev,
+      { quiz_id: currentQuestion.id, is_correct: isCorrect ? "True" : "False" },
+    ]);
   };
 
   // 문제 번호 클릭 시 이동
@@ -68,11 +90,12 @@ const TestQuiz = () => {
       alert("모든 문제를 풀어야 제출할 수 있습니다.");
       return;
     }
+    submitResults();
     alert("답안이 제출되었습니다!");
+    // 답변 제출 코드
+    const questions = location.state?.quizData || [];
     navigate("/quiz/result"); // 제출 후 결과 페이지로 이동
   };
-
-  const isMultipleChoice = Array.isArray(questions.choices);
 
   return (
     <Container>
@@ -110,7 +133,7 @@ const TestQuiz = () => {
         {/* 현재 문제 표시 */}
         <QuestionContent>
           <h2>{questions[currentIndex].quiz_content}</h2>
-          {isMultipleChoice ? (
+          {questions[currentIndex].choices.length !== 1 ? (
             <Choices>
               {questions[currentIndex].choices.map((choice, i) => (
                 <ChoiceButton
@@ -163,16 +186,18 @@ const Sidebar = styled.div`
   padding: 20px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 `;
 
-const Title = styled.h3`
+const Title = styled.h2`
   text-align: center;
 `;
 
 const QuestionList = styled.div`
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  gap: 35px;
   margin: 20px 0;
 `;
 
@@ -181,7 +206,7 @@ const QuestionButton = styled.button`
   height: 40px;
   font-size: 16px;
   border: none;
-  border-radius: 50%;
+  border-radius:20%;
   background: ${({ answered }) => (answered ? "#4caf50" : "#ddd")};
   color: white;
   cursor: pointer;

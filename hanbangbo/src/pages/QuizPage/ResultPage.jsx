@@ -30,11 +30,11 @@ const ResultPage = () => {
   // 문제 데이터 예시 (quiz_comment 추가)
   const questions = Array.from({ length: 20 }, (_, i) => ({
     id: i + 1,
-    question: `문제 ${i + 1}: 이곳에 문제 내용이 들어갑니다.`,
+    question: `문제 ${i + 1}: 권 원내대표가 강조한 대한민국 3가지 기둥은 무엇인가?.`,
     type: i % 2 === 0 ? "multiple" : "subjective",
     category: ["정치", "경제", "사회", "국제", "문화", "과학"][i % 6],
-    correctAnswer: "정답 예시",
-    quiz_comment: `문제 ${i + 1} 해설 예시`, // 해설 추가
+    correctAnswer: "자유민주주의, 시장경제, 한미동맹",
+    quiz_comment: `권 원내대표는 '대한민국에는 세 개의 기둥이 있다. 바로 자유민주주의와 시장경제, 그리고 한미동맹이다.'고 말했다.`, // 해설 추가
   }));
 
   // 맞춘 문제 & 틀린 문제 계산
@@ -82,8 +82,8 @@ const ResultPage = () => {
       <h1>결과 페이지</h1>
       <ScoreBox>
         <h2>총 {questions.length}문제 중</h2>
-        <CorrectText>{correctAnswers.length}개 정답 ✅</CorrectText>
-        <IncorrectText>{incorrectAnswers.length}개 오답 ❌</IncorrectText>
+        <CorrectText>6개 정답 ✅</CorrectText>
+        <IncorrectText>14개 오답 ❌</IncorrectText>
       </ScoreBox>
 
       <ChartContainer>
@@ -105,7 +105,7 @@ const ResultPage = () => {
           .map((q) => (
             <QuestionItem key={q.id}>
               <QuestionTitleText>{q.question}</QuestionTitleText>
-              <p>❌ 당신의 답변: {q.userAnswer}</p>
+              <p>❌ 당신의 답변: {q.correctAnswer}</p>
               <p>✅ 정답: {q.correctAnswer}</p>
               <p>해설: {q.quiz_comment}</p>
             </QuestionItem>
