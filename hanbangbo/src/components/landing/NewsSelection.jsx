@@ -4,16 +4,16 @@ import styled from "styled-components";
 import NewsCategoryBar from "./\bNewsCategoryBar";
 
 const newsSources = [
-  { name: "한국경제", image: "https://picsum.photos/id/1/300/200" },
-  { name: "헤럴드경제", image: "https://picsum.photos/id/2/300/200" },
-  { name: "한겨레", image: "https://picsum.photos/id/3/300/200" },
-  { name: "매일경제", image: "https://picsum.photos/id/4/300/200" },
-  { name: "조선일보", image: "https://picsum.photos/id/5/300/200" },
-  { name: "서울신문", image: "https://picsum.photos/id/6/300/200" },
-  { name: "동아일보", image: "https://picsum.photos/id/7/300/200" },
-  { name: "경향신문", image: "https://picsum.photos/id/8/300/200" },
-  { name: "한국일보", image: "https://picsum.photos/id/9/300/200" },
-  { name: "세계일보", image: "https://picsum.photos/id/10/300/200" },
+  { name: "한국경제", image: "/한국경제.webp" },
+  { name: "헤럴드경제", image: "/헤럴드.png" },
+  { name: "한겨레", image: "/한겨레.jpg" },
+  { name: "매일경제", image: "/매일경제.jpg" },
+  { name: "조선일보", image: "/조선일보.webp" },
+  { name: "서울신문", image: "/서울신문.jpeg" },
+  { name: "동아일보", image: "/동아일보.jpg" },
+  { name: "경향신문", image: "/경향신문.jpg" },
+  { name: "한국일보", image: "/한국일보.jpg" },
+  { name: "세계일보", image: "/세계일보.jpg" },
 ];
 
 // 인기순위 3개 선정
@@ -54,9 +54,7 @@ const NewsSelection = () => {
               key={source.name}
               onClick={() => navigate(`/quiz/select?source=${source.name}`)}
               bgImage={source.image}
-            >
-              <span>{source.name}</span>
-            </MainNewsCard>
+            ></MainNewsCard>
           ))}
         </MainNewsGrid>
       </MainNewsSection>
@@ -102,7 +100,7 @@ const TopNewsCard = styled.div`
   color: white;
   border-radius: 10px;
   background: url(${(props) => props.bgImage}) no-repeat center;
-  background-size: cover;
+  background-size: contain;
   cursor: pointer;
   transition: transform 0.3s ease;
   position: relative;
@@ -118,12 +116,12 @@ const Rank = styled.div`
   left: 20px;
   font-size: 2rem;
   font-weight: 700;
-  color: white;
+  color: black;
 `;
 
 const NewsLabel = styled.div`
-  background-color: rgba(255, 255, 255);
-  color: black;
+  background-color: black;
+  color: white;
   width: 80%;
   text-align: center;
   padding: 10px;
@@ -154,7 +152,7 @@ const MainNewsCard = styled.div`
   color: white;
   border-radius: 10px;
   background: url(${(props) => props.bgImage}) no-repeat center;
-  background-size: cover;
+  background-size: contain;
   cursor: pointer;
   transition: transform 0.3s ease;
 
