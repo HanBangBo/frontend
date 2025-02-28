@@ -5,16 +5,16 @@ import NewsCategoryBar from "./\bNewsCategoryBar";
 
 const newsSources = [
   { name: "한국경제", image: "/한국경제.webp" },
-  { name: "헤럴드경제", image: "/헤럴드.png" },
-  { name: "한겨레", image: "/한겨레.jpg" },
-  { name: "매일경제", image: "/매일경제.jpg" },
+  { name: "헤럴드경제", image: "/헤럴드경제.webp" },
+  { name: "한겨레", image: "/한겨레.webp" },
+  { name: "매일경제", image: "/매일경제.webp" },
   { name: "조선일보", image: "/조선일보.webp" },
-  { name: "서울신문", image: "/서울신문.jpeg" },
-  { name: "동아일보", image: "/동아일보.jpg" },
-  { name: "경향신문", image: "/경향신문.jpg" },
-  { name: "한국일보", image: "/한국일보.jpg" },
-  { name: "세계일보", image: "/세계일보.jpg" },
-];
+  { name: "서울신문", image: "/서울신문.webp" },
+  { name: "동아일보", image: "/동아일보.webp" },
+  { name: "경향신문", image: "/경향신문.webp" },
+  { name: "한국일보", image: "/한국일보.webp" },
+  { name: "세계일보", image: "/세계일보.webp" },
+]; 
 
 // 인기순위 3개 선정
 const topNews = newsSources.slice(0, 3);
